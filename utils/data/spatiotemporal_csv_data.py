@@ -38,7 +38,8 @@ class SpatioTemporalCSVData:
         self._feat_max_val = np.max(self._feat)
         self._adj = load_adjacency_matrix(self._adj_path)
         
-        W_est_file_name = f"data/W_est_sz_pre_len1.npy"
+        # W_est_file_name = f"data/W_est_sz_pre_len1.npy"
+        W_est_file_name = f"data/W_est_los_pre_len1.npy"
         W_est_all = np.load(W_est_file_name)
         if W_est_all.ndim == 2:
             W_est = W_est_all>0

@@ -4,7 +4,7 @@ fit:
     accelerator: cuda
     devices: 1
   data:
-    dataset_name: shenzhen
+    dataset_name: losloop
     batch_size: 32
     seq_len: 12
     pre_len: 3
