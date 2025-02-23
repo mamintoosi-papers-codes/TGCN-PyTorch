@@ -39,20 +39,20 @@ class SpatioTemporalCSVData:
         self._adj = load_adjacency_matrix(self._adj_path)
         
         # W_est_file_name = f"data/W_est_sz_pre_len1.npy"
-        W_est_file_name = f"data/W_est_los_pre_len1.npy"
-        W_est_all = np.load(W_est_file_name)
-        if W_est_all.ndim == 2:
-            W_est = W_est_all>0
-        elif W_est_all.ndim == 3:    
-            W_est = np.any(W_est_all>0, axis=2)
-        # If gsl method is used, the previous adj is reset to zero
-        # else the computed ad learned by gsl is added to adj
-        # if adj_matrix == 'gsl':
-        adj = np.zeros(W_est.shape, dtype=int)
+        # W_est_file_name = f"data/W_est_los_pre_len1.npy"
+        # W_est_all = np.load(W_est_file_name)
+        # if W_est_all.ndim == 2:
+        #     W_est = W_est_all>0
+        # elif W_est_all.ndim == 3:    
+        #     W_est = np.any(W_est_all>0, axis=2)
+        # # If gsl method is used, the previous adj is reset to zero
+        # # else the computed ad learned by gsl is added to adj
+        # # if adj_matrix == 'gsl':
+        # adj = np.zeros(W_est.shape, dtype=int)
 
         # Update values in adj based on the condition
-        adj[W_est > 0] = 1
-        self._adj = adj
+        # adj[W_est > 0] = 1
+        # self._adj = adj
 
 
     def get_datasets(self):
