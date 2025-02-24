@@ -9,7 +9,7 @@ def print_table_metrics(metrics):
     table.add_column("Value", justify="right")
     for k, v in metrics.items():
         table.add_row(k, str(v))
-    console.print(table)
+    # console.print(table)
 
 
 class PrintLastEpochValMetrics:

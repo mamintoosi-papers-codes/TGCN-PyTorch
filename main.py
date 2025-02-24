@@ -62,16 +62,18 @@ def train_and_validate(
                 model_task.regressor.eval()
 
             val_metrics = model_task.validation_epoch(val_loader, device)
-            logger.info(
-                f"[Epoch {epoch+1}/{num_epochs}] "
-                f"Train Loss: {avg_train_loss:.6f}, "
-                f"Val Loss: {val_metrics['val_loss']:.6f}, "
-                f"RMSE: {val_metrics['RMSE']:.6f}, "
-                f"MAE: {val_metrics['MAE']:.6f}, "
-                f"Accuracy: {val_metrics['accuracy']:.4f}, "
-                f"R2: {val_metrics['R2']:.4f}, "
-                f"Expl.Var: {val_metrics['ExplainedVar']:.4f}"
-            )
+            # Log metrics every 10 epochs
+            if epoch % 20 == 0 or epoch == num_epochs - 1:
+                logger.info(
+                    f"[Epoch {epoch+1}/{num_epochs}] "
+                    f"Train Loss: {avg_train_loss:.6f}, "
+                    f"Val Loss: {val_metrics['val_loss']:.6f}, "
+                    f"RMSE: {val_metrics['RMSE']:.6f}, "
+                    f"MAE: {val_metrics['MAE']:.6f}, "
+                    f"Accuracy: {val_metrics['accuracy']:.4f}, "
+                    f"R2: {val_metrics['R2']:.4f}, "
+                    f"Expl.Var: {val_metrics['ExplainedVar']:.4f}"
+                )
 
             # Write metrics to CSV file
             writer.writerow([
@@ -98,6 +100,9 @@ def main():
     format_logger(logger)
     if args.log_path:
         output_logger_to_file(logger, args.log_path)
+
+    # Prevent log messages from being propagated to the root logger
+    logger.propagate = False
 
     with open(args.config, "r") as f:
         config = yaml.safe_load(f)
