@@ -3,6 +3,7 @@ import yaml
 import logging
 import torch
 import os
+import csv  # Add this import
 
 import models  # noqa: F401 just to ensure we import GCN, GRU, TGCN
 from tasks.supervised import SupervisedForecastTask
@@ -18,6 +19,7 @@ def train_and_validate(
     batch_size=32,
     device="cuda",
     logger=logging.getLogger(__name__),
+    metrics_file="metrics.csv"  # Add this parameter
 ):
     """
     Manual training + validation loop (pure PyTorch).
@@ -32,38 +34,56 @@ def train_and_validate(
     optimizer = model_task.configure_optimizer()
 
     logger.info(f"Starting training for {num_epochs} epochs...")
-    for epoch in range(num_epochs):
-        model_task.model.train()
-        if model_task.regressor is not None:
-            model_task.regressor.train()
+    
+    # Open the CSV file to save metrics
+    with open(metrics_file, mode='w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(["Epoch", "Train Loss", "Val Loss", "RMSE", "MAE", "Accuracy", "R2", "Expl.Var"])
 
-        total_train_loss = 0.0
-        for batch_idx, (x, y) in enumerate(train_loader):
-            x, y = x.to(device), y.to(device)
-            optimizer.zero_grad()
-            loss = model_task.training_step((x, y))
-            loss.backward()
-            optimizer.step()
-            total_train_loss += loss.item()
+        for epoch in range(num_epochs):
+            model_task.model.train()
+            if model_task.regressor is not None:
+                model_task.regressor.train()
 
-        avg_train_loss = total_train_loss / len(train_loader)
+            total_train_loss = 0.0
+            for batch_idx, (x, y) in enumerate(train_loader):
+                x, y = x.to(device), y.to(device)
+                optimizer.zero_grad()
+                loss = model_task.training_step((x, y))
+                loss.backward()
+                optimizer.step()
+                total_train_loss += loss.item()
 
-        # ---- Validation ----
-        model_task.model.eval()
-        if model_task.regressor is not None:
-            model_task.regressor.eval()
+            avg_train_loss = total_train_loss / len(train_loader)
 
-        val_metrics = model_task.validation_epoch(val_loader, device)
-        logger.info(
-            f"[Epoch {epoch+1}/{num_epochs}] "
-            f"Train Loss: {avg_train_loss:.6f}, "
-            f"Val Loss: {val_metrics['val_loss']:.6f}, "
-            f"RMSE: {val_metrics['RMSE']:.6f}, "
-            f"MAE: {val_metrics['MAE']:.6f}, "
-            f"Accuracy: {val_metrics['accuracy']:.4f}, "
-            f"R2: {val_metrics['R2']:.4f}, "
-            f"Expl.Var: {val_metrics['ExplainedVar']:.4f}"
-        )
+            # ---- Validation ----
+            model_task.model.eval()
+            if model_task.regressor is not None:
+                model_task.regressor.eval()
+
+            val_metrics = model_task.validation_epoch(val_loader, device)
+            logger.info(
+                f"[Epoch {epoch+1}/{num_epochs}] "
+                f"Train Loss: {avg_train_loss:.6f}, "
+                f"Val Loss: {val_metrics['val_loss']:.6f}, "
+                f"RMSE: {val_metrics['RMSE']:.6f}, "
+                f"MAE: {val_metrics['MAE']:.6f}, "
+                f"Accuracy: {val_metrics['accuracy']:.4f}, "
+                f"R2: {val_metrics['R2']:.4f}, "
+                f"Expl.Var: {val_metrics['ExplainedVar']:.4f}"
+            )
+
+            # Write metrics to CSV file
+            writer.writerow([
+                epoch + 1,
+                avg_train_loss,
+                val_metrics['val_loss'],
+                val_metrics['RMSE'],
+                val_metrics['MAE'],
+                val_metrics['accuracy'],
+                val_metrics['R2'],
+                val_metrics['ExplainedVar']
+            ])
 
 
 def main():
@@ -90,6 +110,7 @@ def main():
     learning_rate = config["fit"]["model"]["learning_rate"]
     weight_decay = config["fit"]["model"]["weight_decay"]
     loss_name = config["fit"]["model"]["loss"]
+    use_gsl = config["fit"]["model"]["model"]["init_args"].get("use_gsl", False)  # Get use_gsl from config
 
     model_class_path = config["fit"]["model"]["model"]["class_path"]  # e.g. "models.GCN"
     model_init_args = config["fit"]["model"]["model"].get("init_args", {})
@@ -101,8 +122,12 @@ def main():
         pre_len=pre_len,
         split_ratio=0.8,
         normalize=True,
+        use_gsl=use_gsl,
     )
     train_dataset, val_dataset = data_module.get_datasets()
+
+    # Generate a unique metrics file name based on config parameters
+    metrics_file = f"metrics_{dataset_name}_{model_class_path.split('.')[-1]}_seq{seq_len}_pre{pre_len}_gsl{use_gsl}.csv"
 
     # Force required arguments depending on the model
     model_cls_name = model_class_path.split(".")[-1]  # e.g. "GCN"
@@ -136,6 +161,7 @@ def main():
         batch_size=batch_size,
         device=device,
         logger=logger,
+        metrics_file=metrics_file  # Pass metrics_file to train_and_validate
     )
 
     logger.info("Finished training!")

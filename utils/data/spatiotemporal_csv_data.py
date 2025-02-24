@@ -24,6 +24,7 @@ class SpatioTemporalCSVData:
         pre_len: int = 3,
         split_ratio: float = 0.8,
         normalize: bool = True,
+        use_gsl: bool = False,
         **kwargs
     ):
         self.dataset_name = dataset_name
@@ -33,26 +34,22 @@ class SpatioTemporalCSVData:
         self.pre_len = pre_len
         self.split_ratio = split_ratio
         self.normalize = normalize
+        self.use_gsl = use_gsl
 
         self._feat = load_features(self._feat_path)
         self._feat_max_val = np.max(self._feat)
         self._adj = load_adjacency_matrix(self._adj_path)
         
-        # W_est_file_name = f"data/W_est_sz_pre_len1.npy"
-        # W_est_file_name = f"data/W_est_los_pre_len1.npy"
-        # W_est_all = np.load(W_est_file_name)
-        # if W_est_all.ndim == 2:
-        #     W_est = W_est_all>0
-        # elif W_est_all.ndim == 3:    
-        #     W_est = np.any(W_est_all>0, axis=2)
-        # # If gsl method is used, the previous adj is reset to zero
-        # # else the computed ad learned by gsl is added to adj
-        # # if adj_matrix == 'gsl':
-        # adj = np.zeros(W_est.shape, dtype=int)
-
-        # Update values in adj based on the condition
-        # adj[W_est > 0] = 1
-        # self._adj = adj
+        if self.use_gsl:
+            W_est_file_name = f"data/W_est_{self.dataset_name}_pre_len{self.pre_len}.npy"
+            W_est_all = np.load(W_est_file_name)
+            if W_est_all.ndim == 2:
+                W_est = W_est_all > 0
+            elif W_est_all.ndim == 3:
+                W_est = np.any(W_est_all > 0, axis=2)
+            adj = np.zeros(W_est.shape, dtype=int)
+            adj[W_est > 0] = 1
+            self._adj = adj
 
 
     def get_datasets(self):
