@@ -132,7 +132,7 @@ def main():
     train_dataset, val_dataset = data_module.get_datasets()
 
     # Generate a unique metrics file name based on config parameters
-    metrics_file = f"metrics_{dataset_name}_{model_class_path.split('.')[-1]}_seq{seq_len}_pre{pre_len}_gsl{use_gsl}.csv"
+    metrics_file = f"results/metrics_{dataset_name}_{model_class_path.split('.')[-1]}_seq{seq_len}_pre{pre_len}_gsl{use_gsl}.csv"
 
     # Force required arguments depending on the model
     model_cls_name = model_class_path.split(".")[-1]  # e.g. "GCN"
