@@ -1,6 +1,6 @@
 fit:
   trainer:
-    max_epochs: 20
+    max_epochs: 50
     accelerator: cuda
     devices: 1
   data:
