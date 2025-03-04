@@ -63,7 +63,7 @@ def train_and_validate(
 
             val_metrics = model_task.validation_epoch(val_loader, device)
             # Log metrics every 10 epochs
-            if epoch % 20 == 0 or epoch == num_epochs - 1:
+            if epoch % 10 == 0 or epoch == num_epochs - 1:
                 logger.info(
                     f"[Epoch {epoch+1}/{num_epochs}] "
                     f"Train Loss: {avg_train_loss:.6f}, "
@@ -115,7 +115,7 @@ def main():
     learning_rate = config["fit"]["model"]["learning_rate"]
     weight_decay = config["fit"]["model"]["weight_decay"]
     loss_name = config["fit"]["model"]["loss"]
-    use_gsl = config["fit"]["model"]["model"]["init_args"].get("use_gsl", False)  # Get use_gsl from config
+    use_gsl = config["fit"]["model"]["model"]["init_args"].get("use_gsl", 0)  # Get use_gsl from config
 
     model_class_path = config["fit"]["model"]["model"]["class_path"]  # e.g. "models.GCN"
     model_init_args = config["fit"]["model"]["model"].get("init_args", {})

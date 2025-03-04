@@ -40,17 +40,19 @@ class SpatioTemporalCSVData:
         self._feat_max_val = np.max(self._feat)
         self._adj = load_adjacency_matrix(self._adj_path)
         
-        if self.use_gsl:
+        if self.use_gsl > 0:
             W_est_file_name = f"data/W_est_{self.dataset_name}_pre_len{self.pre_len}.npy"
             W_est_all = np.load(W_est_file_name)
             if W_est_all.ndim == 2:
                 W_est = W_est_all > 0
             elif W_est_all.ndim == 3:
                 W_est = np.any(W_est_all > 0, axis=2)
-            adj = np.zeros(W_est.shape, dtype=int)
-            adj[W_est > 0] = 1
-            self._adj = adj
-
+            if self.use_gsl == 1:   # (GSL Only)  
+                adj = np.zeros(W_est.shape, dtype=int)
+                adj[W_est > 0] = 1
+                self._adj = adj   
+            else:    
+                self._adj[W_est > 0] = 1 # (GSL + adj)
 
     def get_datasets(self):
         # returns train_dataset, val_dataset

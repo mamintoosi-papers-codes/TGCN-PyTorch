@@ -13,7 +13,7 @@ fit:
       class_path: models.TGCN
       init_args:
         hidden_dim: 64
-        use_gsl: 0
+        use_gsl: 2
     learning_rate: 0.001
     weight_decay: 0
     loss: mse_with_regularizer

@@ -1,6 +1,6 @@
 fit:
   trainer:
-    max_epochs: 100
+    max_epochs: 20
     accelerator: cuda
     devices: 1
   data:
@@ -13,7 +13,7 @@ fit:
       class_path: models.TGCN
       init_args:
         hidden_dim: 100
-        use_gsl: true
+        use_gsl: 1
     learning_rate: 0.001
     weight_decay: 0
     loss: mse_with_regularizer
