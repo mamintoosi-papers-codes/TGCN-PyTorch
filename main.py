@@ -87,6 +87,8 @@ def train_and_validate(
                 val_metrics['ExplainedVar']
             ])
 
+import os
+import torch
 
 def main():
     parser = argparse.ArgumentParser()
@@ -131,6 +133,10 @@ def main():
     )
     train_dataset, val_dataset = data_module.get_datasets()
 
+    # Create 'results' and 'models' folders if they don't exist
+    os.makedirs("results", exist_ok=True)
+    os.makedirs("trained-models", exist_ok=True)
+
     # Generate a unique metrics file name based on config parameters
     metrics_file = f"results/metrics_{dataset_name}_{model_class_path.split('.')[-1]}_seq{seq_len}_pre{pre_len}_gsl{use_gsl}.csv"
 
@@ -168,6 +174,11 @@ def main():
         logger=logger,
         metrics_file=metrics_file  # Pass metrics_file to train_and_validate
     )
+
+    # Save the trained model
+    model_filename = f"trained-models/{dataset_name}_{model_cls_name}_seq{seq_len}_pre{pre_len}_gsl{use_gsl}.pt"
+    torch.save(model.state_dict(), model_filename)
+    logger.info(f"Model saved to {model_filename}")
 
     logger.info("Finished training!")
 
