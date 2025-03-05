@@ -13,23 +13,9 @@ Note that [the original implementation](https://github.com/lehaifeng/T-GCN/tree/
 * numpy
 * pandas
 * torch
-* lightning>=2.0
 * torchmetrics>=0.11
 
-⚠️ The repository is currently based on Lightning 2.0. To use PyTorch Lightning v1.x, please switch to the `pl_v1` branch.
-
 ## Model Training
-
-* CLI
-
-    ```bash
-    # GCN
-    python main.py fit --trainer.max_epochs 3000 --trainer.accelerator cuda --trainer.devices 1 --data.dataset_name losloop --data.batch_size 64 --data.seq_len 12 --data.pre_len 3 --model.model.class_path models.GCN --model.learning_rate 0.001 --model.weight_decay 0 --model.loss mse --model.model.init_args.hidden_dim 100
-    # GRU
-    python main.py fit --trainer.max_epochs 3000 --trainer.accelerator cuda --trainer.devices 1 --data.dataset_name losloop --data.batch_size 64 --data.seq_len 12 --data.pre_len 3 --model.model.class_path models.GRU --model.learning_rate 0.001 --model.weight_decay 1.5e-3 --model.loss mse --model.model.init_args.hidden_dim 100
-    # T-GCN
-    python main.py fit --trainer.max_epochs 1500 --trainer.accelerator cuda --trainer.devices 1 --data.dataset_name losloop --data.batch_size 32 --data.seq_len 12 --data.pre_len 3 --model.model.class_path models.TGCN --model.learning_rate 0.001 --model.weight_decay 0 --model.loss mse_with_regularizer --model.model.init_args.hidden_dim 64
-    ```
 
 * YAML config file
 
@@ -42,6 +28,27 @@ Note that [the original implementation](https://github.com/lehaifeng/T-GCN/tree/
     python main.py fit --config configs/tgcn.yaml
     ```
 
-Please refer to `python main.py fit -h` for more CLI arguments.
+Certainly! Here's a suggestion for the "GSL Section" of your README file:
 
-Run `tensorboard --logdir ./lightning_logs` to monitor the training progress and view the prediction results.
+---
+
+### GSL (Graph Structure Learning) 
+
+This program incorporates Graph Structure Learning (GSL) for estimating the adjacency matrix. The adjacency matrix is essential for training and inference. Here's how the program handles the adjacency matrix:
+
+1. **Loading an Existing Matrix**:  
+   If the estimated adjacency matrix file (e.g., `W_est_losloop_pre_len1.npy`) exists in the `data/` folder, the program will load it directly for computations. This ensures efficiency by utilizing precomputed matrices.
+
+2. **Estimating a New Matrix**:  
+   If the required adjacency matrix file cannot be found in the `data/` folder, the program will estimate it using GSL. Once computed, the new adjacency matrix will be saved for future use. The program provides a log to indicate this process:
+
+   Example output:
+   ```
+   100%|██████████| 180000/180000.0 [10:03<00:00, 298.33it/s]  
+   [2025-03-05 13:39:45,765 INFO]Using device: cuda
+   File data/W_est_losloop_pre_len1.npy did not exist.  The adjacency matrix estimated by GSL is computed and saved.
+   ```
+
+This dual functionality ensures flexibility and reusability of precomputed results while accommodating dynamic estimation when necessary. 
+
+---

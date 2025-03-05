@@ -100,7 +100,7 @@ class SpatioTemporalCSVData:
 
                 # Save the computed adjacency matrix estimates  
                 np.save(W_est_file_name, W_est_all)  
-                print(f"File {W_est_file_name} did not exist. Computed and saved adjacency matrix estimated by GSL.")  
+                print(f"File {W_est_file_name} did not exist. The adjacency matrix estimated by GSL is computed and saved.")  
 
             # Now proceed to create the adjacency matrix based on the loaded or computed W_est_all  
             if W_est_all.ndim == 2:  

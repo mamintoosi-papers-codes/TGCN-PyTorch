@@ -141,6 +141,8 @@ def main():
     train_dataset, val_dataset = data_module.get_datasets()
     if data_module.use_gsl>0:
         data_module.compute_adjacency_matrix()
+    else:
+        print("T-GCN")
     
     # Create 'results' and 'models' folders if they don't exist
     os.makedirs("results", exist_ok=True)
@@ -189,7 +191,7 @@ def main():
     torch.save(model.state_dict(), model_filename)
     logger.info(f"Model saved to {model_filename}")
 
-    logger.info("Finished training!")
+    logger.info("Finished training!\n")
 
 if __name__ == "__main__":
     main()
