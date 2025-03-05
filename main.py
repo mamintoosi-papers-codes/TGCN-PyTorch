@@ -1,6 +1,8 @@
 import argparse
 import yaml
 import logging
+import random  
+import numpy as np  
 import torch
 import os
 import csv  # Add this import
@@ -10,6 +12,10 @@ from tasks.supervised import SupervisedForecastTask
 from utils.data.spatiotemporal_csv_data import SpatioTemporalCSVData
 from utils.logging import format_logger, output_logger_to_file
 
+# Set random seed for reproducibility  
+random.seed(42)          # Set Python random seed  
+np.random.seed(42)      # Set NumPy seed  
+torch.manual_seed(42)   # Set PyTorch seed  
 
 def train_and_validate(
     model_task: SupervisedForecastTask,
@@ -24,6 +30,7 @@ def train_and_validate(
     """
     Manual training + validation loop (pure PyTorch).
     """
+    
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=len(val_dataset), shuffle=False)
 
@@ -132,7 +139,9 @@ def main():
         use_gsl=use_gsl,
     )
     train_dataset, val_dataset = data_module.get_datasets()
-
+    if data_module.use_gsl>0:
+        data_module.compute_adjacency_matrix()
+    
     # Create 'results' and 'models' folders if they don't exist
     os.makedirs("results", exist_ok=True)
     os.makedirs("trained-models", exist_ok=True)
