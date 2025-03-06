@@ -26,7 +26,7 @@ share/python-wheels/
 *.egg
 MANIFEST
 
-results/
+results*/
 trained-models/
 *.synctex.gz
 *.aux

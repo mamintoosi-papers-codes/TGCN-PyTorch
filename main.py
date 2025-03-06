@@ -155,7 +155,7 @@ def main():
     os.makedirs("trained-models", exist_ok=True)
 
     # Generate a unique metrics file name based on config parameters
-    metrics_file = f"results/metrics_{dataset_name}_{model_class_path.split('.')[-1]}_seq{seq_len}_pre{pre_len}_gsl{use_gsl}.csv"
+    metrics_file = f"results/{model_cls_name}/metrics_{dataset_name}_seq{seq_len}_pre{pre_len}_gsl{use_gsl}.csv"
 
     if model_cls_name in ("GCN", "TGCN"):
         model_init_args["adj"] = data_module.adj
