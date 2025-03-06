@@ -138,11 +138,17 @@ def main():
         normalize=True,
         use_gsl=use_gsl,
     )
+
+
+    # Force required arguments depending on the model
+    model_cls_name = model_class_path.split(".")[-1]  # e.g. "GCN"
+    ModelClass = getattr(models, model_cls_name)
+
     train_dataset, val_dataset = data_module.get_datasets()
     if data_module.use_gsl>0:
         data_module.compute_adjacency_matrix()
     else:
-        print("T-GCN")
+        print(model_cls_name)
     
     # Create 'results' and 'models' folders if they don't exist
     os.makedirs("results", exist_ok=True)
@@ -150,10 +156,6 @@ def main():
 
     # Generate a unique metrics file name based on config parameters
     metrics_file = f"results/metrics_{dataset_name}_{model_class_path.split('.')[-1]}_seq{seq_len}_pre{pre_len}_gsl{use_gsl}.csv"
-
-    # Force required arguments depending on the model
-    model_cls_name = model_class_path.split(".")[-1]  # e.g. "GCN"
-    ModelClass = getattr(models, model_cls_name)
 
     if model_cls_name in ("GCN", "TGCN"):
         model_init_args["adj"] = data_module.adj
