@@ -12,7 +12,7 @@ fit:
     model:
       class_path: models.GCN
       init_args:
-        hidden_dim: 100
+        hidden_dim: 64
         use_gsl: 1
     learning_rate: 0.001
     weight_decay: 0
