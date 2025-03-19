@@ -74,7 +74,6 @@ class SpatioTemporalCSVData:
             raise AttributeError("train_data is not available. Please call get_datasets() first.")  
 
         if self.use_gsl > 0:  
-            # Define the file name for the estimated adjacency matrix  
             W_est_file_name = f"data/W_est_{self.dataset_name}_pre_len{self.pre_len}.npy"  
 
             # Check if the file exists  
@@ -86,28 +85,45 @@ class SpatioTemporalCSVData:
                 # If the file does not exist, compute and save it  
                 num_nodes = self._adj.shape[0]  
                 W_est_all = np.zeros((num_nodes, num_nodes, self.pre_len))  
-                data = np.array([x[0] for x in self.train_data])  
+                data = np.array([x[0] for x in self.train_data])
+                
+                # Print data statistics
+                print(f"\nDataset: {self.dataset_name}")
+                print(f"Data shape: {data.shape}")
+                print(f"Data mean: {np.mean(data):.4f}")
+                print(f"Data std: {np.std(data):.4f}")
+                print(f"Data min: {np.min(data):.4f}")
+                print(f"Data max: {np.max(data):.4f}")
 
                 for i in range(self.pre_len):  
-                    X = data[i::self.pre_len]  
-                    # print(f"Computing for i = {i}, shape of X: {X.shape}")  
+                    X = data[i::self.pre_len]
+                    print(f"\nFor i={i}:")
+                    print(f"X shape: {X.shape}")
+                    print(f"X mean: {np.mean(X):.4f}")
+                    print(f"X std: {np.std(X):.4f}")
                     
-                    # Create and fit the linear model  
-                    model = DagmaLinear(loss_type='l2')  # Create a linear model with least squares loss  
-                    w_est = model.fit(X, lambda1=0.02)    # Fit the model with L1 reg. (coeff. 0.02)  
+                    # Try different lambda values for sz dataset
+                    lambda1 = 0.01 if self.dataset_name == "shenzhen" else 0.02
+                    model = DagmaLinear(loss_type='l2')
+                    w_est = model.fit(X, lambda1=lambda1)
                     
-                    # Store the estimated coefficients  
+                    print(f"Number of non-zero elements in w_est: {np.count_nonzero(w_est)}")
+                    print(f"Mean of non-zero elements: {np.mean(w_est[w_est != 0]):.4f}")
+                    print(f"Max of non-zero elements: {np.max(np.abs(w_est)):.4f}")
+                    
                     W_est_all[:, :, i] = w_est  
 
                 # Save the computed adjacency matrix estimates  
                 np.save(W_est_file_name, W_est_all)  
-                print(f"File {W_est_file_name} did not exist. The adjacency matrix estimated by GSL is computed and saved.")  
+                print(f"\nFile {W_est_file_name} did not exist. The adjacency matrix estimated by GSL is computed and saved.")
+                print(f"Total number of non-zero elements: {np.count_nonzero(W_est_all)}")
 
-            # Now proceed to create the adjacency matrix based on the loaded or computed W_est_all  
             if W_est_all.ndim == 2:  
                 W_est = W_est_all > 0  
             elif W_est_all.ndim == 3:  
                 W_est = np.any(W_est_all > 0, axis=2)  
+                print(f"\nAfter reduction:")
+                print(f"Number of non-zero elements: {np.count_nonzero(W_est)}")
 
             if self.use_gsl == 1:  # (GSL Only)  
                 adj = np.zeros(W_est.shape, dtype=int)  
