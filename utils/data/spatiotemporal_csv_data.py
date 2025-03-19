@@ -110,9 +110,14 @@ class SpatioTemporalCSVData:
                 adj[W_est > 0] = 1  
                 self._adj = adj  
                 print('GSL computed: Only GSL')  
-            else:  # (GSL + adj)  
+            elif self.use_gsl == 2:  # (GSL + adj)  
                 self._adj[W_est > 0] = 1  
                 print('GSL computed: GSL+Adj')
+            else:  # (GSL for Cycle directed graph)  
+                adj = np.zeros(W_est.shape, dtype=int)  
+                adj[W_est > 0] = 1  
+                self._adj = adj  + adj.T
+                print('GSL computed: GSL for Cycle directed graph')
 
     @property  
     def feat_max_val(self):  
