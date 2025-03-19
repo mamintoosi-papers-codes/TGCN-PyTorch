@@ -103,7 +103,7 @@ class SpatioTemporalCSVData:
                     print(f"X std: {np.std(X):.4f}")
                     
                     # Try different lambda values for sz dataset
-                    lambda1 = 0.01 if self.dataset_name == "shenzhen" else 0.02
+                    lambda1 = 0.001 if self.dataset_name == "shenzhen" else 0.02
                     model = DagmaLinear(loss_type='l2')
                     w_est = model.fit(X, lambda1=lambda1)
                     
