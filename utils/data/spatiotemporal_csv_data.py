@@ -58,8 +58,9 @@ class SpatioTemporalCSVData:
         )  
         
         # Convert datasets to numpy arrays and store them  
-        self.train_data = np.array([x[0] for x in train_dataset])  
-        self.val_data = np.array([x[0] for x in val_dataset])  
+        # Get the first element (X) from each tuple in the dataset
+        self.train_data = np.array([x[0].numpy() for x in train_dataset])  
+        self.val_data = np.array([x[0].numpy() for x in val_dataset])  
         
         return train_dataset, val_dataset  
 

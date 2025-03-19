@@ -152,6 +152,7 @@ def main():
     
     # Create 'results' and 'models' folders if they don't exist
     os.makedirs("results", exist_ok=True)
+    os.makedirs(f"results/{model_cls_name}", exist_ok=True)
     os.makedirs("trained-models", exist_ok=True)
 
     # Generate a unique metrics file name based on config parameters
