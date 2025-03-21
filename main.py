@@ -95,28 +95,28 @@ def train_and_validate(
                 val_metrics['ExplainedVar']
             ])
             
-            # Save validation results and plot at the last epoch
-            if epoch == num_epochs - 1:
-                # Get predictions for plotting
-                with torch.no_grad():
-                    x, y = next(iter(val_loader))
-                    x, y = x.to(device), y.to(device)
-                    y_pred = model_task.model(x)
+            # # Save validation results and plot at the last epoch
+            # if epoch == num_epochs - 1:
+            #     # Get predictions for plotting
+            #     with torch.no_grad():
+            #         x, y = next(iter(val_loader))
+            #         x, y = x.to(device), y.to(device)
+            #         y_pred = model_task.model(x)
                     
-                    # Scale predictions and true values
-                    y_pred = y_pred * model_task.feat_max_val
-                    y = y * model_task.feat_max_val
+            #         # Scale predictions and true values
+            #         y_pred = y_pred * model_task.feat_max_val
+            #         y = y * model_task.feat_max_val
                     
-                    # Convert to numpy for plotting
-                    y_pred = y_pred.cpu().numpy()
-                    y_true = y.cpu().numpy()
+            #         # Convert to numpy for plotting
+            #         y_pred = y_pred.cpu().numpy()
+            #         y_true = y.cpu().numpy()
                     
-                    # Reshape for plotting (batch_size, pre_len, num_nodes) -> (batch_size * pre_len, num_nodes)
-                    y_pred = y_pred.transpose(0, 2, 1).reshape(-1, y_pred.shape[-1])
-                    y_true = y_true.reshape(-1, y_true.shape[1])
+            #         # Reshape for plotting (batch_size, pre_len, num_nodes) -> (batch_size * pre_len, num_nodes)
+            #         y_pred = y_pred.transpose(0, 2, 1).reshape(-1, y_pred.shape[-1])
+            #         y_true = y_true.reshape(-1, y_true.shape[1])
                                         
-                    # Plot and save results
-                    plot_result(y_pred, y_true, metrics_file.replace('.csv', '.pdf'))
+            #         # Plot and save results
+            #         plot_result(y_pred, y_true, metrics_file.replace('.csv', '.pdf'))
 
 def main():
     parser = argparse.ArgumentParser()
@@ -216,7 +216,7 @@ def main():
     torch.save(model.state_dict(), model_filename)
     logger.info(f"Model saved to {model_filename}")
 
-    logger.info("Finished!\n")
+    logger.info("Finished training!\n")
 
 if __name__ == "__main__":
     main()
