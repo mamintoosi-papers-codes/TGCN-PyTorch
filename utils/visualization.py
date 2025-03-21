@@ -15,22 +15,35 @@ def plot_result(y_pred, y_true, plot_file):
         metrics_file: path to the metrics file, used to generate the plot filename
     """
     # Create figure
-    fig = plt.figure(figsize=(15, 10))
+    # fig = plt.figure(figsize=(15, 10))
     
-    # Plot all test data
-    plt.subplot(2, 1, 1)
-    plt.plot(y_true[:, 0], label='True', color='blue', alpha=0.7)
-    plt.plot(y_pred[:, 0], label='Predicted', color='red', alpha=0.7)
-    plt.title('All Test Data')
-    plt.xlabel('Time Steps')
-    plt.ylabel('Traffic Flow')
-    plt.legend()
-    plt.grid(True)
+    # # Plot all test data
+    # plt.subplot(2, 1, 1)
+    # plt.plot(y_true[:, 0], label='True', color='blue', alpha=0.7)
+    # plt.plot(y_pred[:, 0], label='Predicted', color='red', alpha=0.7)
+    # plt.title('All Test Data')
+    # plt.xlabel('Time Steps')
+    # plt.ylabel('Traffic Flow')
+    # plt.legend()
+    # plt.grid(True)
     
     # Plot one day's worth of test data
-    plt.subplot(2, 1, 2)
-    plt.plot(y_true[:48, 0], label='True', color='blue', alpha=0.7)
-    plt.plot(y_pred[:48, 0], label='Predicted', color='red', alpha=0.7)
+    # plt.subplot(2, 1, 2)
+
+    num_test_data_points = 96
+
+    # Save predictions and true values to Excel file
+    result_file = plot_file.replace('.pdf', '.xlsx')
+    df_result = pd.DataFrame({
+        'True': y_true[:num_test_data_points, 0],
+        'Predicted': y_pred[:num_test_data_points, 0]
+    })
+    
+    with pd.ExcelWriter(result_file) as writer:
+        df_result.to_excel(writer, sheet_name='Results', index=False)
+
+    plt.plot(y_true[:num_test_data_points, 0], label='True', color='blue', alpha=0.7)
+    plt.plot(y_pred[:num_test_data_points, 0], label='Predicted', color='red', alpha=0.7)
     plt.title('One Day of Test Data')
     plt.xlabel('Time Steps')
     plt.ylabel('Traffic Flow')

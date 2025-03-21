@@ -114,16 +114,7 @@ def train_and_validate(
                     # Reshape for plotting (batch_size, pre_len, num_nodes) -> (batch_size * pre_len, num_nodes)
                     y_pred = y_pred.transpose(0, 2, 1).reshape(-1, y_pred.shape[-1])
                     y_true = y_true.reshape(-1, y_true.shape[1])
-                    
-                    # Save predictions and true values to Excel file
-                    result_file = metrics_file.replace('.csv', '.xlsx')
-                    df_pred = pd.DataFrame(y_pred)
-                    df_true = pd.DataFrame(y_true)
-                    
-                    with pd.ExcelWriter(result_file) as writer:
-                        df_pred.to_excel(writer, sheet_name='pred', index=False)
-                        df_true.to_excel(writer, sheet_name='true', index=False)
-                    
+                                        
                     # Plot and save results
                     plot_result(y_pred, y_true, metrics_file.replace('.csv', '.pdf'))
 
