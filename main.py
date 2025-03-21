@@ -6,11 +6,13 @@ import numpy as np
 import torch
 import os
 import csv  # Add this import
+import pandas as pd
 
 import models  # noqa: F401 just to ensure we import GCN, GRU, TGCN
 from tasks.supervised import SupervisedForecastTask
 from utils.data.spatiotemporal_csv_data import SpatioTemporalCSVData
 from utils.logging import format_logger, output_logger_to_file
+from utils.visualization import plot_result 
 
 # Set random seed for reproducibility  
 random.seed(42)          # Set Python random seed  
@@ -25,12 +27,11 @@ def train_and_validate(
     batch_size=32,
     device="cuda",
     logger=logging.getLogger(__name__),
-    metrics_file="metrics.csv"  # Add this parameter
+    metrics_file="metrics.csv",  # Add this parameter
 ):
     """
     Manual training + validation loop (pure PyTorch).
     """
-    
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=len(val_dataset), shuffle=False)
 
@@ -93,9 +94,39 @@ def train_and_validate(
                 val_metrics['R2'],
                 val_metrics['ExplainedVar']
             ])
-
-import os
-import torch
+            
+            # Save validation results and plot at the last epoch
+            if epoch == num_epochs - 1:
+                # Save validation results to a separate file
+                val_metrics_file = metrics_file.replace('.csv', '_val.csv')
+                with open(val_metrics_file, mode='w', newline='') as val_file:
+                    val_writer = csv.writer(val_file)
+                    val_writer.writerow(["Metric", "Value"])
+                    val_writer.writerow(["RMSE", val_metrics['RMSE']])
+                    val_writer.writerow(["MAE", val_metrics['MAE']])
+                    val_writer.writerow(["R2", val_metrics['R2']])
+                    val_writer.writerow(["Explained Variance", val_metrics['ExplainedVar']])
+                
+                # Get predictions for plotting
+                with torch.no_grad():
+                    x, y = next(iter(val_loader))
+                    x, y = x.to(device), y.to(device)
+                    y_pred = model_task.model(x)
+                    
+                    # Scale predictions and true values
+                    y_pred = y_pred * model_task.feat_max_val
+                    y = y * model_task.feat_max_val
+                    
+                    # Convert to numpy for plotting
+                    y_pred = y_pred.cpu().numpy()
+                    y_true = y.cpu().numpy()
+                    
+                    # Reshape for plotting (batch_size, pre_len, num_nodes) -> (batch_size * pre_len, num_nodes)
+                    y_pred = y_pred.transpose(0, 2, 1).reshape(-1, y_pred.shape[-1])
+                    y_true = y_true.reshape(-1, y_true.shape[1])
+                    
+                    # Plot and save results
+                    plot_result(y_pred, y_true, metrics_file.replace('.csv', '.pdf'))
 
 def main():
     parser = argparse.ArgumentParser()
@@ -139,17 +170,16 @@ def main():
         use_gsl=use_gsl,
     )
 
-
     # Force required arguments depending on the model
     model_cls_name = model_class_path.split(".")[-1]  # e.g. "GCN"
     ModelClass = getattr(models, model_cls_name)
 
     train_dataset, val_dataset = data_module.get_datasets()
-    if data_module.use_gsl>0:
+    if data_module.use_gsl > 0:
         data_module.compute_adjacency_matrix()
     else:
         print(model_cls_name)
-    
+
     # Create 'results' and 'models' folders if they don't exist
     os.makedirs("results", exist_ok=True)
     os.makedirs(f"results/{model_cls_name}", exist_ok=True)
@@ -165,6 +195,9 @@ def main():
         model_init_args["num_nodes"] = data_module.num_nodes
 
     model = ModelClass(**model_init_args)
+    device = args.device if torch.cuda.is_available() and args.device.startswith("cuda") else "cpu"
+    logger.info(f"Using device: {device}")
+    model = model.to(device)
 
     model_task = SupervisedForecastTask(
         model=model,
@@ -175,9 +208,9 @@ def main():
         feat_max_val=data_module.feat_max_val,
     )
 
-    device = args.device if torch.cuda.is_available() and args.device.startswith("cuda") else "cpu"
-    logger.info(f"Using device: {device}")
+    model_filename = f"trained-models/{dataset_name}_{model_cls_name}_seq{seq_len}_pre{pre_len}_gsl{use_gsl}.pt"
 
+    # Train and validate
     train_and_validate(
         model_task=model_task,
         train_dataset=train_dataset,
@@ -186,15 +219,14 @@ def main():
         batch_size=batch_size,
         device=device,
         logger=logger,
-        metrics_file=metrics_file  # Pass metrics_file to train_and_validate
+        metrics_file=metrics_file
     )
 
     # Save the trained model
-    model_filename = f"trained-models/{dataset_name}_{model_cls_name}_seq{seq_len}_pre{pre_len}_gsl{use_gsl}.pt"
     torch.save(model.state_dict(), model_filename)
     logger.info(f"Model saved to {model_filename}")
 
-    logger.info("Finished training!\n")
+    logger.info("Finished!\n")
 
 if __name__ == "__main__":
     main()
