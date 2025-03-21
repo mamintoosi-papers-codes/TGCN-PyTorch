@@ -30,7 +30,7 @@ def plot_result(y_pred, y_true, plot_file):
     # Plot one day's worth of test data
     # plt.subplot(2, 1, 2)
 
-    num_test_data_points = 96
+    num_test_data_points = 192
 
     # Save predictions and true values to Excel file
     result_file = plot_file.replace('.pdf', '.xlsx')
@@ -44,7 +44,7 @@ def plot_result(y_pred, y_true, plot_file):
 
     plt.plot(y_true[:num_test_data_points, 0], label='True', color='blue', alpha=0.7)
     plt.plot(y_pred[:num_test_data_points, 0], label='Predicted', color='red', alpha=0.7)
-    plt.title('One Day of Test Data')
+    plt.title('Test Data')
     plt.xlabel('Time Steps')
     plt.ylabel('Traffic Flow')
     plt.legend()
